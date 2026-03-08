@@ -19,24 +19,23 @@
         .contenido-centrado {
             position: relative;
             z-index: 10;
-            width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
         }
         
         .mensaje-texto {
-            color: #FF1493; /* El rosa fuerte de la flor */
+            color: #FF1493; /* Rosa fuerte vibrante */
             font-family: 'Great Vibes', cursive;
-            /* Tamaño adaptativo: usa el valor más pequeño entre el ancho y el alto */
-            font-size: clamp(2rem, 8vw, 6rem); 
-            font-weight: normal;
+            /* Ajuste prolijo: En móvil es grande, en PC se limita para no ser gigante */
+            font-size: clamp(2.5rem, 10vw, 5.5rem); 
             text-align: center;
-            text-shadow: 0 0 15px rgba(255, 20, 147, 0.5);
+            text-shadow: 0 0 15px rgba(255, 20, 147, 0.6);
             padding: 20px;
-            width: 100%;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -64,8 +63,12 @@
             let x = 16 * Math.pow(Math.sin(t), 3);
             let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
             
-            // Ajuste dinámico para PC: el corazón no debe superar el 80% de la altura o el ancho
-            const scale = Math.min(canvas.width / 50, canvas.height / 50);
+            // Lógica de escala mejorada para PC
+            // En pantallas anchas (PC), el corazón crece más para enmarcar el texto
+            let baseScale = window.innerWidth > 1000 ? canvas.width / 45 : canvas.width / 35;
+            // Limitamos la escala máxima para que no se corte arriba/abajo
+            const scale = Math.min(baseScale, canvas.height / 35);
+            
             return { x: x * scale, y: y * scale };
         }
 
@@ -73,15 +76,15 @@
             constructor() {
                 this.t = Math.random() * Math.PI * 2;
                 this.size = Math.random() * 1.5 + 0.5;
-                this.speed = Math.random() * 0.002 + 0.001; 
+                this.speed = Math.random() * 0.0015 + 0.0008; // Movimiento más lento aún para PC
                 this.opacity = Math.random() * 0.7 + 0.2;
-                this.offset = (Math.random() - 0.5) * 25; 
+                this.offset = (Math.random() - 0.5) * 30; // Trazo grueso
             }
             
             update() {
                 this.t += this.speed;
                 const point = getHeartPoint(this.t);
-                const pulse = 1 + Math.sin(Date.now() * 0.001) * 0.03;
+                const pulse = 1 + Math.sin(Date.now() * 0.001) * 0.04;
                 this.x = canvas.width / 2 + (point.x * pulse) + (Math.cos(this.t) * this.offset);
                 this.y = canvas.height / 2 + (point.y * pulse) + (Math.sin(this.t) * this.offset);
             }
@@ -95,8 +98,8 @@
         }
 
         function init() {
-            // Aumentamos partículas para pantallas de PC más grandes
-            const count = window.innerWidth > 1000 ? 2500 : 1800;
+            // Más partículas para que en monitores grandes no se vea vacío
+            const count = window.innerWidth > 1000 ? 3000 : 1800;
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
             }
