@@ -16,37 +16,27 @@
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         
-        /* Contenedor principal centrado */
         .contenido-centrado {
             position: relative;
-            z-index: 10; /* Encima de las partículas */
+            z-index: 10;
             width: 100%;
             height: 100%;
             display: flex;
-            justify-content: center; /* Centrado horizontal */
-            align-items: center;     /* Centrado vertical */
-            pointer-events: none;    /* No interfiere con el canvas */
-        }
-        
-        .mensaje-container {
-            text-align: center;
-            display: flex;
             justify-content: center;
             align-items: center;
+            pointer-events: none;
         }
         
         .mensaje-texto {
-            color: #FF1493; /* Rosa fuerte vibrante de la flor */
+            color: #FF1493; /* El rosa fuerte de la flor */
             font-family: 'Great Vibes', cursive;
-            font-size: 11vw; /* Tamaño dinámico adaptable */
+            /* Tamaño adaptativo: usa el valor más pequeño entre el ancho y el alto */
+            font-size: clamp(2rem, 8vw, 6rem); 
             font-weight: normal;
-            letter-spacing: 1px;
-            /* Sombras más suaves y difusas para un look limpio */
-            text-shadow: 0 0 10px rgba(255, 20, 147, 0.4), 
-                         0 0 20px rgba(255, 20, 147, 0.3);
-            /* Centrado adicional */
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 20, 147, 0.5);
+            padding: 20px;
             width: 100%;
-            white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
         }
     </style>
 </head>
@@ -55,19 +45,13 @@
     <canvas id="heart"></canvas>
     
     <div class="contenido-centrado">
-        <div class="mensaje-container">
-            <div class="mensaje-texto">Mai te quiero</div>
-        </div>
+        <div class="mensaje-texto">Mai te quiero</div>
     </div>
 
     <script>
         const canvas = document.getElementById('heart');
         const ctx = canvas.getContext('2d');
         let particles = [];
-
-        // Cantidad de partículas y parámetros para el trazo grueso
-        const particleCount = 1800;
-        const dispersion = 28;
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -76,43 +60,33 @@
             init();
         }
 
-        // Ecuación paramétrica del corazón
         function getHeartPoint(t) {
             let x = 16 * Math.pow(Math.sin(t), 3);
             let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
             
-            // Escala adaptable: más pequeña en móviles para que no se corte
-            const scale = Math.min(canvas.width / 45, canvas.height / 45);
+            // Ajuste dinámico para PC: el corazón no debe superar el 80% de la altura o el ancho
+            const scale = Math.min(canvas.width / 50, canvas.height / 50);
             return { x: x * scale, y: y * scale };
         }
 
         class Particle {
             constructor() {
                 this.t = Math.random() * Math.PI * 2;
-                // Tamaño más variado como polvo de purpurina
                 this.size = Math.random() * 1.5 + 0.5;
-                // Velocidad extremadamente lenta y pausada
                 this.speed = Math.random() * 0.002 + 0.001; 
-                // Opacidad variada para el efecto de profundidad
                 this.opacity = Math.random() * 0.7 + 0.2;
-                // Dispersión aleatoria para el trazo grueso y difuso
-                this.offset = (Math.random() - 0.5) * dispersion; 
+                this.offset = (Math.random() - 0.5) * 25; 
             }
             
             update() {
                 this.t += this.speed;
                 const point = getHeartPoint(this.t);
-                
-                // Pulsación sutil y lenta
                 const pulse = 1 + Math.sin(Date.now() * 0.001) * 0.03;
-                
-                // Movimiento lento y ondulado
                 this.x = canvas.width / 2 + (point.x * pulse) + (Math.cos(this.t) * this.offset);
                 this.y = canvas.height / 2 + (point.y * pulse) + (Math.sin(this.t) * this.offset);
             }
             
             draw() {
-                // Usamos el color rosa fuerte de la flor
                 ctx.fillStyle = `rgba(255, 20, 147, ${this.opacity})`;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -121,13 +95,14 @@
         }
 
         function init() {
-            for (let i = 0; i < particleCount; i++) {
+            // Aumentamos partículas para pantallas de PC más grandes
+            const count = window.innerWidth > 1000 ? 2500 : 1800;
+            for (let i = 0; i < count; i++) {
                 particles.push(new Particle());
             }
         }
 
         function animate() {
-            // Efecto estela muy suave para dar sensación de movimiento fluido y lento
             ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => { 
@@ -137,7 +112,6 @@
             requestAnimationFrame(animate);
         }
 
-        // Listener para adaptar el tamaño si cambia la orientación del celular
         window.addEventListener('resize', resize);
         resize();
         animate();
